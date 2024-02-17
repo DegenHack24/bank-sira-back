@@ -4,6 +4,7 @@
 const {wrapResponse} = require("../utils/writer");
 const {ppraTokens} = require("../mock/TokenMockData");
 const { Contract, ethers } = require("ethers");
+const { getAllOffersPOST } = require("./OffersService");
 const EquityTokenABI = require("../abis/EquityToken.json").abi;
 /**
  * All of my tokens
@@ -11,13 +12,24 @@ const EquityTokenABI = require("../abis/EquityToken.json").abi;
  * xAuthToken String In requests head should be attached token from login service
  * returns TokenEnvelope
  **/
-exports.getMyTokensPOST = function (xAuthToken) {
+exports.getMyTokensPOST = async function (xAuthToken) {
+    const offers = (await getAllOffersPOST(xAuthToken, {})).body;
+    const offersCountByAddress = offers.reduce((acc, offer) => {
+        if (acc[offer.additionalInformation.tokenAddress]) {
+            acc[offer.additionalInformation.tokenAddress]++;
+        } else {
+            acc[offer.additionalInformation.tokenAddress] = 1;
+        }
+        return acc;
+    });
+
     return new Promise(async function (resolve, reject) {
         const provider = new ethers.providers.InfuraProvider(process.env.NETWORK, process.env.INFURA_KEY);
         for (const token of ppraTokens) {
             const contract = new Contract(token.address, EquityTokenABI, provider);
             const balance = await contract.balanceOf(xAuthToken);
             token.balance = balance;
+            token.offerCount = offersCountByAddress[token.address] || 0;
         }
 
         resolve(wrapResponse(ppraTokens));
