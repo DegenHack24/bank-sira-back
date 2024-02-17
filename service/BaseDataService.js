@@ -1,23 +1,19 @@
 'use strict';
 
 
+const {wrapResponse} = require("../utils/writer");
+const {issuers, peers} = require("../mock/BaseDataMockData");
 /**
  * Issuers list
  *
  * xAuthToken String In requests head should be attached token from login service
- * body IssuersRequest 
+ * body IssuersRequest
  * returns IssuerEnvelope
  **/
-exports.getIssuersPOST = function(xAuthToken,body) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json;charset&#x3D;utf-8'] = {};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
+exports.getIssuersPOST = function (xAuthToken, body) {
+    return new Promise(function (resolve, reject) {
+        resolve(wrapResponse(issuers));
+    });
 }
 
 
@@ -25,19 +21,19 @@ exports.getIssuersPOST = function(xAuthToken,body) {
  * Papers list for specific client
  *
  * xAuthToken String In requests head should be attached token from login service
- * body MyAssetsRequest 
+ * body MyAssetsRequest
  * returns MyAssetsEnvelope
  **/
-exports.getMyAssetsPOST = function(xAuthToken,body) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json;charset&#x3D;utf-8'] = {};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
+exports.getMyAssetsPOST = function (xAuthToken, body) {
+    return new Promise(function (resolve, reject) {
+        var examples = {};
+        examples['application/json;charset&#x3D;utf-8'] = {};
+        if (Object.keys(examples).length > 0) {
+            resolve(examples[Object.keys(examples)[0]]);
+        } else {
+            resolve();
+        }
+    });
 }
 
 
@@ -46,16 +42,10 @@ exports.getMyAssetsPOST = function(xAuthToken,body) {
  *
  * returns PeersEnvelope
  **/
-exports.getPeersGET = function() {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json;charset&#x3D;utf-8'] = {};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
+exports.getPeersGET = function () {
+    return new Promise(function (resolve, reject) {
+        resolve(wrapResponse(peers))
+    });
 }
 
 
@@ -63,19 +53,19 @@ exports.getPeersGET = function() {
  * All data for specific registry
  *
  * xAuthToken String In requests head should be attached token from login service
- * body RegistryRequest 
+ * body RegistryRequest
  * returns RegistryEnvelope
  **/
-exports.getRegistryPOST = function(xAuthToken,body) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json;charset&#x3D;utf-8'] = {};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
+exports.getRegistryPOST = function (xAuthToken, body) {
+    return new Promise(function (resolve, reject) {
+        var examples = {};
+        examples['application/json;charset&#x3D;utf-8'] = {};
+        if (Object.keys(examples).length > 0) {
+            resolve(examples[Object.keys(examples)[0]]);
+        } else {
+            resolve();
+        }
+    });
 }
 
 
@@ -83,18 +73,18 @@ exports.getRegistryPOST = function(xAuthToken,body) {
  * Data for sharholder
  *
  * xAuthToken String In requests head should be attached token from login service
- * body ShareholderRequest 
+ * body ShareholderRequest
  * returns ShareholderEnvelope
  **/
-exports.getShareholderPOST = function(xAuthToken,body) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json;charset&#x3D;utf-8'] = {};
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
+exports.getShareholderPOST = function (xAuthToken, body) {
+    return new Promise(function (resolve, reject) {
+        var examples = {};
+        examples['application/json;charset&#x3D;utf-8'] = {};
+        if (Object.keys(examples).length > 0) {
+            resolve(examples[Object.keys(examples)[0]]);
+        } else {
+            resolve();
+        }
+    });
 }
 
