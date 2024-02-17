@@ -20,7 +20,7 @@ module.exports.getOfferPOST = function getOfferPOST (req, res, next) {
   var body = req.swagger.params['body'].value;
   Offers.getOfferPOST(xAuthToken,body)
     .then(function (response) {
-      utils.writeJson(res, response);
+      utils.writeJson(res, response?.body, response?.code);
     })
     .catch(function (response) {
       utils.writeJson(res, response);
@@ -32,7 +32,7 @@ module.exports.getOffersPOST = function getOffersPOST (req, res, next) {
   var body = req.swagger.params['body'].value;
   Offers.getOffersPOST(xAuthToken,body)
     .then(function (response) {
-      utils.writeJson(res, response);
+      utils.writeJson(res, response?.body, response?.code);
     })
     .catch(function (response) {
       utils.writeJson(res, response);
