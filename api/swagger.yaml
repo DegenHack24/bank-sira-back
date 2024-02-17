@@ -1,0 +1,1562 @@
+---
+swagger: "2.0"
+info:
+  version: "2.0"
+  title: "Standard Interfejsu Rejestrów Akcjonariuszy"
+  license:
+    name: "Licence -> Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "localhost:8080"
+basePath: "/v1"
+schemes:
+- "https"
+paths:
+  /challenge:
+    post:
+      tags:
+      - "Authorization"
+      summary: "Variable for an authorization"
+      description: "Normally for connection with this service you should buy a Standard\
+        \ Service certificate. The certyfikat should be issued for a RSA or ED key.\
+        \ For the hackathone challenge you won't need that."
+      operationId: "challengePOST"
+      consumes:
+      - "application/json;charset=utf-8"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters:
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/WalletURI"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/ChallengeToken"
+        "400":
+          description: "Wrong body"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "404":
+          description: "Unknown client"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "500":
+          description: "Server error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+      x-swagger-router-controller: "Authorization"
+  /login:
+    post:
+      tags:
+      - "Authorization"
+      summary: "Client authorization"
+      operationId: "loginPOST"
+      consumes:
+      - "application/json;charset=utf-8"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters:
+      - name: "X-Auth-Token"
+        in: "header"
+        description: "In requests head should be attached temporary token from challenge\
+          \ service/Nagłówek musi zawierac tymczasowy token uzyskany z usługi challenge"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "Challenge should be sign by user's private key matched with\
+          \ wallet_address/Challenge musi zostać podpisany za pomocą klucza prywatnego\
+          \ użytkownika powiązanego z podanym wallet_address"
+        required: true
+        schema:
+          $ref: "#/definitions/ChallengeVerification"
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/RegularToken"
+        "400":
+          description: "Wrong body"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "401":
+          description: "Authorization error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "404":
+          description: "Unknow client"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "500":
+          description: "Server error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+      x-swagger-router-controller: "Authorization"
+  /getPeers:
+    get:
+      tags:
+      - "Base data"
+      summary: "Other API SIRA addresses list"
+      operationId: "getPeersGET"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters: []
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/PeersEnvelope"
+        "400":
+          description: "Wrong body"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "403":
+          description: "Authorization error/Błąd autoryzacji do zasobów"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "404":
+          description: "Clients/peers not found/Nie znaleziono klienta/peer'ów"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "500":
+          description: "Server error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+      x-swagger-router-controller: "BaseData"
+  /getIssuers:
+    post:
+      tags:
+      - "Base data"
+      summary: "Issuers list"
+      operationId: "getIssuersPOST"
+      consumes:
+      - "application/json;charset=utf-8"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters:
+      - name: "X-Auth-Token"
+        in: "header"
+        description: "In requests head should be attached token from login service"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/IssuersRequest"
+      security:
+      - X-Auth-Token: []
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/IssuerEnvelope"
+        "400":
+          description: "Wrong body"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "403":
+          description: "Authorization error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "404":
+          description: "Issuers not found"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "500":
+          description: "Server error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+      x-swagger-router-controller: "BaseData"
+  /getMyAssets:
+    post:
+      tags:
+      - "Base data"
+      summary: "Papers list for specific client"
+      operationId: "getMyAssetsPOST"
+      consumes:
+      - "application/json;charset=utf-8"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters:
+      - name: "X-Auth-Token"
+        in: "header"
+        description: "In requests head should be attached token from login service"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/MyAssetsRequest"
+      security:
+      - X-Auth-Token: []
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/MyAssetsEnvelope"
+        "400":
+          description: "Wrong body"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "403":
+          description: "Authorization error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "404":
+          description: "Papers not found"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "500":
+          description: "Server error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+      x-swagger-router-controller: "BaseData"
+  /getRegistry:
+    post:
+      tags:
+      - "Base data"
+      summary: "All data for specific registry"
+      operationId: "getRegistryPOST"
+      consumes:
+      - "application/json;charset=utf-8"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters:
+      - name: "X-Auth-Token"
+        in: "header"
+        description: "In requests head should be attached token from login service"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/RegistryRequest"
+      security:
+      - X-Auth-Token: []
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/RegistryEnvelope"
+        "400":
+          description: "Wrong body"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "403":
+          description: "Authorization error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "404":
+          description: "Issuers not found"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "500":
+          description: "Server error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+      x-swagger-router-controller: "BaseData"
+  /getShareholder:
+    post:
+      tags:
+      - "Base data"
+      summary: "Data for sharholder"
+      operationId: "getShareholderPOST"
+      consumes:
+      - "application/json;charset=utf-8"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters:
+      - name: "X-Auth-Token"
+        in: "header"
+        description: "In requests head should be attached token from login service"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/ShareholderRequest"
+      security:
+      - X-Auth-Token: []
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/ShareholderEnvelope"
+        "400":
+          description: "Wrong body"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "403":
+          description: "Authorization error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "404":
+          description: "Issuers/papers not found"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "500":
+          description: "Server error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+      x-swagger-router-controller: "BaseData"
+  /getSpecificIssuerTokens:
+    post:
+      tags:
+      - "Addresses for tokens"
+      summary: "All tokens for specific issuer"
+      operationId: "getSpecificIssuerTokensPOST"
+      consumes:
+      - "application/json;charset=utf-8"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters:
+      - name: "X-Auth-Token"
+        in: "header"
+        description: "In requests head should be attached token from login service"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/TokenForSpecificIssuerRequest"
+      security:
+      - X-Auth-Token: []
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/TokenEnvelope"
+        "400":
+          description: "Wrong body"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "403":
+          description: "Authorization error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "404":
+          description: "Tokens not found"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "500":
+          description: "Server error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+      x-swagger-router-controller: "AddressesForTokens"
+  /getTokens:
+    post:
+      tags:
+      - "Addresses for tokens"
+      summary: "All tokens issued by specific PPRA"
+      operationId: "getTokensPOST"
+      consumes:
+      - "application/json;charset=utf-8"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters:
+      - name: "X-Auth-Token"
+        in: "header"
+        description: "In requests head should be attached token from login service"
+        required: true
+        type: "string"
+      security:
+      - X-Auth-Token: []
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/TokenEnvelope"
+        "400":
+          description: "Wrong body"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "403":
+          description: "Authorization error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "404":
+          description: "Tokens not found"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "500":
+          description: "Server error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+      x-swagger-router-controller: "AddressesForTokens"
+  /getMyTokens:
+    post:
+      tags:
+      - "Addresses for tokens"
+      summary: "All of my tokens"
+      operationId: "getMyTokensPOST"
+      consumes:
+      - "application/json;charset=utf-8"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters:
+      - name: "X-Auth-Token"
+        in: "header"
+        description: "In requests head should be attached token from login service"
+        required: true
+        type: "string"
+      security:
+      - X-Auth-Token: []
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/TokenEnvelope"
+        "400":
+          description: "Wrong body"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "403":
+          description: "Authorization error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "404":
+          description: "Issuer's tokens not found"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "500":
+          description: "Server error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+      x-swagger-router-controller: "AddressesForTokens"
+  /getAllOffers:
+    post:
+      tags:
+      - "Offers"
+      summary: "All offers from TOK"
+      operationId: "getAllOffersPOST"
+      consumes:
+      - "application/json;charset=utf-8"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters:
+      - name: "X-Auth-Token"
+        in: "header"
+        description: "In requests head should be attached token from login service"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/AllOfferEnvelope"
+      security:
+      - X-Auth-Token: []
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/OfferEnvelope"
+        "400":
+          description: "Wrong body"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "403":
+          description: "Authorization error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "404":
+          description: "Offer not found"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "500":
+          description: "Server error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+      x-swagger-router-controller: "Offers"
+  /getOffers:
+    post:
+      tags:
+      - "Offers"
+      summary: "All offers for specific issuer"
+      operationId: "getOffersPOST"
+      consumes:
+      - "application/json;charset=utf-8"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters:
+      - name: "X-Auth-Token"
+        in: "header"
+        description: "In requests head should be attached token from login service"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/OfferForIssuerEnvelope"
+      security:
+      - X-Auth-Token: []
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/OfferEnvelope"
+        "400":
+          description: "Wrong body"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "403":
+          description: "Authorization error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "404":
+          description: "Offer not found"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "500":
+          description: "Server error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+      x-swagger-router-controller: "Offers"
+  /getOffer:
+    post:
+      tags:
+      - "Offers"
+      summary: "Details for specific offer"
+      operationId: "getOfferPOST"
+      consumes:
+      - "application/json;charset=utf-8"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters:
+      - name: "X-Auth-Token"
+        in: "header"
+        description: "In requests head should be attached token from login service"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/OfferDetailsEnvelope"
+      security:
+      - X-Auth-Token: []
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/OfferEnvelope"
+        "400":
+          description: "Wrong body"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "403":
+          description: "Authorization error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "404":
+          description: "Offer not found"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "500":
+          description: "Server error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+      x-swagger-router-controller: "Offers"
+  /offerNegotiation:
+    post:
+      tags:
+      - "Negotiations"
+      summary: "Offer negotiation"
+      operationId: "offerNegotiationPOST"
+      consumes:
+      - "application/json;charset=utf-8"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters:
+      - name: "X-Auth-Token"
+        in: "header"
+        description: "In requests head should be attached token from login service"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/OfferNegotiation"
+      security:
+      - X-Auth-Token: []
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/OfferNegotiationResponse"
+        "400":
+          description: "Wrong body"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "403":
+          description: "Authorization error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "404":
+          description: "Offer not found"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "500":
+          description: "Server error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+      x-swagger-router-controller: "Negotiations"
+  /counterOfferNegotiation:
+    post:
+      tags:
+      - "Negotiations"
+      summary: "Counter offer"
+      operationId: "counterOfferNegotiationPOST"
+      consumes:
+      - "application/json;charset=utf-8"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters:
+      - name: "X-Auth-Token"
+        in: "header"
+        description: "In requests head should be attached token from login service"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/CounterOfferNegotiation"
+      security:
+      - X-Auth-Token: []
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/OfferNegotiationResponse"
+        "400":
+          description: "Wrong body"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "403":
+          description: "Authorization error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "404":
+          description: "Offer not found"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "500":
+          description: "Server error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+      x-swagger-router-controller: "Negotiations"
+  /lockOfferNegotiation:
+    post:
+      tags:
+      - "Negotiations"
+      summary: "Blocking specific negotiation"
+      operationId: "lockOfferNegotiationPOST"
+      consumes:
+      - "application/json;charset=utf-8"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters:
+      - name: "X-Auth-Token"
+        in: "header"
+        description: "In requests head should be attached token from login service"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/LockOfferNegotiation"
+      security:
+      - X-Auth-Token: []
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/OfferNegotiationResponse"
+        "400":
+          description: "Wrong body"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "403":
+          description: "Authorization error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "404":
+          description: "Offer not found"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "500":
+          description: "Server error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+      x-swagger-router-controller: "Negotiations"
+  /getAssetInfo:
+    post:
+      tags:
+      - "Other"
+      summary: "Details about specific transaction"
+      operationId: "getAssetInfoPOST"
+      consumes:
+      - "application/json;charset=utf-8"
+      produces:
+      - "application/json;charset=utf-8"
+      parameters:
+      - name: "X-Auth-Token"
+        in: "header"
+        description: "In requests head should be attached token from login service"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/GetAssetInfoRequest"
+      security:
+      - X-Auth-Token: []
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: "#/definitions/GetAssetInfoEnvelope"
+        "400":
+          description: "Wrong body"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "403":
+          description: "Authorization error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "404":
+          description: "Specific token package not found"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+        "500":
+          description: "Server error"
+          schema:
+            $ref: "#/definitions/MessageResponse"
+      x-swagger-router-controller: "Other"
+securityDefinitions:
+  X-Auth-Token:
+    description: "Token for login service, Token validity period 10 second, each request\
+      \ extends the validity of the token."
+    type: "apiKey"
+    name: "X-Auth-Token"
+    in: "header"
+definitions:
+  WalletURI:
+    type: "object"
+    required:
+    - "wallet_address"
+    properties:
+      wallet_address:
+        type: "string"
+    example:
+      wallet_address: "wallet_address"
+  ChallengeToken:
+    type: "object"
+    required:
+    - "token"
+    properties:
+      token:
+        type: "string"
+      challenge:
+        type: "string"
+    description: "Temporary token from challenge service."
+    example:
+      challenge: "challenge"
+      token: "token"
+  RegularToken:
+    type: "object"
+    required:
+    - "token"
+    properties:
+      token:
+        type: "string"
+    description: "Token from login service for other endpoints."
+    example:
+      token: "token"
+  ChallengeVerification:
+    type: "object"
+    required:
+    - "challenge"
+    - "signature"
+    properties:
+      challenge:
+        type: "string"
+      signature:
+        type: "string"
+        description: "Signed by client's private key"
+    example:
+      signature: "signature"
+      challenge: "challenge"
+  PeersEnvelope:
+    type: "object"
+    required:
+    - "allowed_list"
+    - "blocked_list"
+    - "ppra_name"
+    properties:
+      allowed_list:
+        type: "array"
+        items:
+          $ref: "#/definitions/Peer"
+      blocked_list:
+        type: "array"
+        items:
+          $ref: "#/definitions/Peer"
+      ppra_name:
+        type: "string"
+    example:
+      allowed_list:
+      - api_version: "v2.0.1"
+        url: "https://example.com/sira"
+        ppra_name: "BM PKO BP"
+      blocked_list:
+      - api_version: "v2.0.0"
+        url: "https://example.com/api"
+        ppra_name: "BM PKO BP"
+  Peer:
+    type: "object"
+    required:
+    - "api_version"
+    - "url"
+    properties:
+      url:
+        type: "string"
+      api_version:
+        type: "string"
+    description: "Addresses for others SIRA's API."
+    example:
+      api_version: "v0.1.1"
+      url: "https://example.com/api"
+  IssuersRequest:
+    type: "object"
+    required:
+    - "page_envelope"
+    properties:
+      page_envelope:
+        $ref: "#/definitions/PageEnvelope"
+    description: "Informations about tokens of specific shareholder in specific issuer."
+    example:
+      page_envelope:
+        page: 1
+        items_on_page: 20
+  PageEnvelope:
+    type: "object"
+    example:
+      page: 1
+      items_on_page: 20
+  PageEnvelopeResponse:
+    type: "object"
+    example:
+      page: 1
+      items_on_page: 20
+      total_pages: 20
+  IssuerEnvelope:
+    type: "object"
+    required:
+    - "issuers"
+    - "page_envelope"
+    properties:
+      issuers:
+        type: "array"
+        items:
+          $ref: "#/definitions/Issuers"
+      page_envelope:
+        $ref: "#/definitions/PageEnvelopeResponse"
+    example:
+      issuers:
+      - name: "Firma"
+        krs_e_number: "2233232"
+        registration_date: "2014-12-03"
+        address: "ul. Puławska 15, 03-682 Warszawa"
+        nip: "5384354"
+        regon: "5384354"
+        number_of_my_assets: 340
+        my_share_in_equity: 0.11999999999999999555910790149937383830547332763671875
+      page_envelope:
+        page: 1
+        items_on_page: 20
+        total_pages: 20
+  Issuers:
+    type: "object"
+    required:
+    - "krs_e_number"
+    - "name"
+    properties:
+      name:
+        type: "string"
+      krs_e_number:
+        type: "string"
+      registration_date:
+        $ref: "#/definitions/Date"
+      address:
+        type: "string"
+      regon:
+        type: "string"
+      number_of_my_assets:
+        type: "number"
+        format: "long"
+      my_share_in_equity:
+        type: "number"
+        format: "float"
+    description: "Data for specific issuer"
+    example:
+      name: "Firma"
+      krs_e_number: "2233232"
+      registration_date: "2014-12-03"
+      address: "ul. Puławska 15, 03-682 Warszawa"
+      nip: "5384354"
+      regon: "5384354"
+      number_of_my_assets: 340
+      my_share_in_equity: 0.11999999999999999555910790149937383830547332763671875
+  Date:
+    type: "object"
+    format: "date"
+    example: "2016-07-22"
+  MyAssetsRequest:
+    type: "object"
+    required:
+    - "krs_e_number"
+    - "page_envelope"
+    properties:
+      page_envelope:
+        $ref: "#/definitions/PageEnvelope"
+      krs_e_number:
+        type: "string"
+    description: "Informations about tokens of specific shareholder in specific issuer."
+    example:
+      page_envelope:
+        page: 1
+        items_on_page: 20
+      krs_e_number: "krs_e_number"
+  MyAssetsEnvelope:
+    type: "object"
+    required:
+    - "assets"
+    - "page_envelope"
+    properties:
+      assets:
+        type: "array"
+        items:
+          $ref: "#/definitions/MyAssets"
+      page_envelope:
+        $ref: "#/definitions/PageEnvelopeResponse"
+    example:
+      assets:
+      - emission_date: "2014-12-03"
+        series: "A"
+        paper_number_from: 123
+        paper_number_to: 125
+        isin: "AXSD"
+        paper_isin_number: 1200
+        nominal_value: 100
+        paper_type: "nonfungible stocks"
+        is_paid: true
+        limitations: true
+        special_authorizations: true
+        addnotations: "Additional righst: two votes for one stock"
+      page_envelope:
+        page: 1
+        items_on_page: 20
+        total_pages: 20
+  MyAssets:
+    type: "object"
+    required:
+    - "emission_date"
+    - "is_paid"
+    - "nominal_value"
+    properties:
+      emission_date:
+        $ref: "#/definitions/Date"
+      series:
+        type: "string"
+      paper_number_from:
+        type: "number"
+        format: "long"
+      paper_number_to:
+        type: "number"
+        format: "long"
+      isin:
+        type: "string"
+      paper_isin_number:
+        type: "number"
+        format: "long"
+      nominal_value:
+        type: "number"
+        format: "float"
+      paper_type:
+        type: "string"
+      is_paid:
+        type: "boolean"
+      limitations:
+        type: "boolean"
+      special_authorizations:
+        type: "boolean"
+      addnotations:
+        type: "string"
+    description: "Informations about tokens of specific shareholder in specific company."
+    example:
+      emission_date: "2014-12-03"
+      series: "A"
+      paper_number_from: 123
+      paper_number_to: 125
+      isin: "AXSD"
+      paper_isin_number: 1200
+      nominal_value: 100
+      paper_type: "nonfungible stocks"
+      is_paid: true
+      limitations: true
+      special_authorizations: true
+      addnotations: "Additional rights: two votes for one stock"
+  RegistryRequest:
+    type: "object"
+    required:
+    - "krs_e_number"
+    - "page_envelope"
+    properties:
+      page_envelope:
+        $ref: "#/definitions/PageEnvelope"
+      krs_e_number:
+        type: "string"
+    description: "Complete data from the shareholder registry."
+    example:
+      page_envelope:
+        page: 1
+        items_on_page: 20
+      krs_e_number: "krs_e_number"
+  RegistryEnvelope:
+    type: "object"
+    required:
+    - "page_envelope"
+    - "registry"
+    properties:
+      registry:
+        $ref: "#/definitions/Registry"
+      page_envelope:
+        $ref: "#/definitions/PageEnvelopeResponse"
+    example:
+      registry:
+        issuer:
+          name: "Firma"
+          company_registration_date: "2014-12-03"
+          address: "ul. Puławska 15, 03-682 Warszawa"
+          nip: "5288294788"
+          regon: "438159307"
+        meta:
+        - owner_company: "Akcjonariusz S.A."
+          owner_name: "Andrzej, Janusz"
+          owner_surname: "Saski"
+          owner_email: "anjasas@gmail.com"
+          owner_address: "ul. Gazowana 43, 03-744, Warszawa"
+          emission_date: "2014-01-01"
+          paper_type: "nonfungible stocks"
+          series: "A"
+          paper_number_from: 1
+          paper_number_to: 2
+          isin: "ZAS127"
+          paper_isin_number: 9892424
+          nominal_value: 10.5
+          is_paid: true
+          limitations: false
+          special_authorizations: true
+          addnotations: "Fully paid stocks"
+      page_envelope:
+        page: 1
+        items_on_page: 20
+        total_pages: 20
+  Registry:
+    type: "object"
+    required:
+    - "issuer"
+    properties:
+      issuer:
+        $ref: "#/definitions/Issuer"
+      meta:
+        type: "array"
+        items:
+          $ref: "#/definitions/MetaType"
+    description: "Complete data from the shareholder registry."
+    example:
+      issuer:
+        name: "Firma"
+        company_registration_date: "2014-12-03"
+        address: "ul. Puławska 15, 03-682 Warszawa"
+        nip: "5288294788"
+        regon: "438159307"
+      meta:
+      - owner_company: "Akcjonariusz S.A."
+        owner_name: "Andrzej, Janusz"
+        owner_surname: "Saski"
+        owner_email: "anjasas@gmail.com"
+        owner_address: "ul. Gazowana 43, 03-744, Warszawa"
+        emission_date: "2014-01-01"
+        paper_type: "nonfungible stocks"
+        series: "A"
+        paper_number_from: 1
+        paper_number_to: 2
+        isin: "ZAS127"
+        paper_isin_number: 9892424
+        nominal_value: 10.5
+        is_paid: true
+        limitations: false
+        special_authorizations: true
+        addnotations: "Fully paid stocks"
+  MetaType:
+    type: "object"
+    required:
+    - "emission_date"
+    - "is_paid"
+    - "limitations"
+    - "nominal_value"
+    - "owner_address"
+    - "owner_name"
+    - "paper_type"
+    - "special_authorizations"
+    properties:
+      owner_company:
+        type: "string"
+      owner_name:
+        type: "string"
+      owner_surname:
+        type: "string"
+      owner_email:
+        type: "string"
+      owner_address:
+        type: "string"
+      emission_date:
+        $ref: "#/definitions/Date"
+      paper_type:
+        type: "string"
+      series:
+        type: "string"
+      paper_number_from:
+        type: "number"
+        format: "long"
+      paper_number_to:
+        type: "number"
+        format: "long"
+      isin:
+        type: "string"
+      paper_isin_number:
+        type: "number"
+        format: "long"
+      nominal_value:
+        type: "number"
+        format: "float"
+      is_paid:
+        type: "boolean"
+      limitations:
+        type: "boolean"
+      special_authorizations:
+        type: "boolean"
+      addnotations:
+        type: "string"
+    description: "Akcje"
+  ShareholderRequest:
+    type: "object"
+    required:
+    - "page_envelope"
+    properties:
+      page_envelope:
+        $ref: "#/definitions/PageEnvelope"
+    description: "Client's data who calls API."
+    example:
+      page_envelope:
+        page: 2
+        items_on_page: 20
+  ShareholderEnvelope:
+    type: "object"
+    required:
+    - "page_envelope"
+    - "shareholders"
+    properties:
+      shareholders:
+        $ref: "#/definitions/Shareholder"
+      page_envelope:
+        $ref: "#/definitions/PageEnvelopeResponse"
+    example:
+      shareholders:
+        company: "Akcjonariusz S.A."
+        name: "Andrzej, Janusz"
+        surname: "Saski"
+        email: "anjasas@gmail.com"
+        address: "ul. Gazowana 43, 03-744, Warszawa"
+      page_envelope:
+        page: 2
+        items_on_page: 20
+        total_pages: 1
+  Shareholder:
+    type: "object"
+    properties:
+      company:
+        type: "string"
+      name:
+        type: "string"
+      surname:
+        type: "string"
+      email:
+        type: "string"
+      address:
+        type: "string"
+    description: "Client's data who calls API."
+    example:
+      company: "Akcjonariusz S.A."
+      name: "Andrzej, Janusz"
+      surname: "Saski"
+      email: "anjasas@gmail.com"
+      address: "ul. Gazowana 43, 03-744, Warszawa"
+  TokenForSpecificIssuerRequest:
+    type: "object"
+    required:
+    - "krs_e_number"
+    - "page_envelope"
+    properties:
+      page_envelope:
+        $ref: "#/definitions/PageEnvelope"
+      krs_e_number:
+        type: "string"
+    description: "Tokens addresses issued by specific issuer."
+    example:
+      page_envelope:
+        page: 1
+        items_on_page: 20
+      krs_e_number: "krs_e_number"
+  TokenEnvelope:
+    type: "object"
+    required:
+    - "page_envelope"
+    properties:
+      data:
+        type: "array"
+        items:
+          $ref: "#/definitions/TokenMetadata"
+      page_envelope:
+        $ref: "#/definitions/PageEnvelopeResponse"
+    example:
+      tokens:
+      - id: "12345"
+        address: "0x1234567890"
+        isin: "AABB"
+        series: "BCDF"
+      page_envelope:
+        page: 1
+        items_on_page: 20
+        total_pages: 1
+  TokenMetadata:
+    type: "object"
+    required:
+    - "address"
+    - "id"
+    - "isin"
+    - "series"
+    properties:
+      id:
+        type: "string"
+      address:
+        type: "string"
+      isin:
+        type: "string"
+      series:
+        type: "string"
+    example:
+      id: "12345"
+      address: "0x1234567890"
+      isin: "AABB"
+      series: "BCDF"
+  AllOfferEnvelope:
+    type: "object"
+    required:
+    - "page_envelope"
+    properties:
+      page_envelope:
+        $ref: "#/definitions/PageEnvelope"
+    example:
+      page_envelope:
+        page: 1
+        page_total: 1
+  OfferEnvelope:
+    type: "object"
+    required:
+    - "offers"
+    - "page_envelope"
+    properties:
+      offers:
+        type: "array"
+        items:
+          $ref: "#/definitions/OfferMetadata"
+      page_envelope:
+        $ref: "#/definitions/PageEnvelopeResponse"
+    example:
+      offers:
+      - order_id: 12345
+        krs_e_number: "2313445"
+        status: "B"
+        negotiations:
+        - paper_count: 12
+          price: "21"
+          negotiation_id: "12"
+      page_envelope:
+        page: 1
+        items_on_page: 2
+        total_pages: 1
+  Issuer:
+    type: "object"
+    required:
+    - "address"
+    - "company_registration_date"
+    - "name"
+    - "nip"
+    - "regon"
+    properties:
+      name:
+        type: "string"
+      company_registration_date:
+        $ref: "#/definitions/Date"
+      address:
+        type: "string"
+      nip:
+        type: "string"
+      regon:
+        type: "string"
+    description: "Issuer data."
+  OfferMetadata:
+    type: "object"
+    required:
+    - "order_id"
+    properties:
+      order_id:
+        type: "integer"
+      krs_e_number:
+        type: "string"
+      status:
+        type: "string"
+      negotiations:
+        type: "array"
+        items:
+          $ref: "#/definitions/NegotiationEnvelope"
+    example:
+      order_id: 12345
+      krs_e_number: "2313445"
+      status: "B"
+  NegotiationEnvelope:
+    type: "object"
+    required:
+    - "data"
+    properties:
+      data:
+        $ref: "#/definitions/Negotiation"
+    example:
+      data:
+        paper_type: "nonfungible stocks"
+        series: "AZSA"
+        paper_number_from: 1221
+        paper_number_to: 2345
+  Negotiation:
+    type: "object"
+    required:
+    - "negotiation_id"
+    properties:
+      paper_count:
+        type: "integer"
+      price:
+        type: "string"
+      negotiation_id:
+        type: "string"
+    example:
+      paper_count: 200
+      price: "12"
+      negotiation_id: "12"
+  OfferForIssuerEnvelope:
+    type: "object"
+    required:
+    - "krs_e_number"
+    - "page_envelope"
+    properties:
+      krs_e_number:
+        type: "string"
+      page_envelope:
+        $ref: "#/definitions/PageEnvelope"
+    example:
+      krs_e_number: "121321"
+      page_envelope:
+        page: 1
+        items_on_page: 20
+  OfferDetailsEnvelope:
+    type: "object"
+    required:
+    - "page_envelope"
+    properties:
+      krs_e_number:
+        type: "string"
+      page_envelope:
+        $ref: "#/definitions/PageEnvelope"
+    example:
+      order_id: 121321
+      page_envelope:
+        page: 1
+        items_on_page: 20
+  OfferNegotiation:
+    type: "object"
+    required:
+    - "order_id"
+    - "paper_count"
+    - "price"
+    properties:
+      price:
+        type: "string"
+      paper_count:
+        type: "integer"
+      order_id:
+        type: "integer"
+      comment:
+        type: "string"
+    description: "Start of the negotiation for specific offer"
+    example:
+      price: "200"
+      paper_count: 200
+      order_id: 1221
+      comment: "Any text"
+  CounterOfferNegotiation:
+    type: "object"
+    required:
+    - "negotiation_id"
+    - "order_id"
+    - "paper_count"
+    - "price"
+    properties:
+      price:
+        type: "string"
+      paper_count:
+        type: "integer"
+      order_id:
+        type: "integer"
+      negotiation_id:
+        type: "string"
+      comment:
+        type: "string"
+    description: "Start of the negotiation for specific offer"
+    example:
+      price: "200"
+      paper_count: 200
+      order_id: 1221
+      negotiation_id: "2345"
+      comment: "Any text"
+  OfferNegotiationResponse:
+    type: "object"
+    required:
+    - "comment"
+    properties:
+      comment:
+        type: "string"
+    description: "New offer status."
+    example:
+      comment: "comment"
+  LockOfferNegotiation:
+    type: "object"
+    required:
+    - "negotiation_id"
+    - "order_id"
+    properties:
+      order_id:
+        type: "integer"
+      negotiation_id:
+        type: "string"
+      comment:
+        type: "string"
+    description: "Class for ending negotiation with state from the last data exchange\
+      \ between clients / Umożliwia infomrowanie o chęci zakończenie negocjacji na\
+      \ warunkach zaoferowanych w ostatniej wymianie danych"
+    example:
+      order_id: 1221
+      negotiation_id: "2345"
+      comment: "Any text"
+  GetAssetInfoRequest:
+    type: "object"
+    required:
+    - "transaction_hash"
+    properties:
+      page_envelope:
+        $ref: "#/definitions/PageEnvelope"
+      transaction_hash:
+        type: "string"
+    example:
+      transaction_hash: "0xf0cf96302fa6b06424b9377aaa80f496d10b9724123b8c3b8f3844c68c83d574"
+      page_envelope:
+        page: 1
+        total_pages: 10
+  GetAssetInfoEnvelope:
+    type: "object"
+    required:
+    - "page_envelope"
+    - "transaction_details"
+    properties:
+      transaction_details:
+        type: "array"
+        items:
+          $ref: "#/definitions/TransactionDetails"
+      page_envelope:
+        $ref: "#/definitions/PageEnvelopeResponse"
+    example:
+      transaction_details:
+      - paper_type: "nonfungible stocks"
+        series: "AZSA"
+        paper_number_from: 1221
+        paper_number_to: 2345
+        description: "blocked"
+      page_envelope:
+        page: 1
+        items_on_page: 10
+        total_pages: 1
+  TransactionDetails:
+    type: "object"
+    required:
+    - "isin"
+    - "paper_number_from"
+    - "paper_number_to"
+    - "paper_type"
+    - "series"
+    properties:
+      paper_type:
+        type: "string"
+      series:
+        type: "string"
+      isin:
+        type: "string"
+      paper_number_from:
+        type: "number"
+        format: "long"
+      paper_number_to:
+        type: "number"
+        format: "long"
+    example:
+      tranactionDetails:
+        paper_type: "nonfungible stocks"
+        series: "AZSA"
+        paper_number_from: 1221
+        paper_number_to: 2345
+        description: "blocked"
+  MessageResponse:
+    type: "object"
+    required:
+    - "comment"
+    properties:
+      comment:
+        type: "array"
+        items:
+          type: "string"
+    description: "Status of new offer."
+externalDocs:
+  description: ""
+  url: "https://www.gov.pl/web/cyfryzacja/sira"
