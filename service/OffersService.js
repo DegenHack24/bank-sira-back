@@ -1,8 +1,10 @@
 'use strict';
 
 
-const {produceErrorResponse, offers, producePageEnvelope} = require("../mock/OfferMockData");
-const {wrapResponse} = require("../utils/writer");
+const { ethers, Contract } = require("ethers");
+const { produceErrorResponse, offers, producePageEnvelope } = require("../mock/OfferMockData");
+const { wrapResponse } = require("../utils/writer");
+const TOKAbi = require("../abis/TOK.json").abi;
 /**
  * All offers from TOK
  *
@@ -12,15 +14,36 @@ const {wrapResponse} = require("../utils/writer");
  **/
 exports.getAllOffersPOST = function (xAuthToken, body) {
     return new Promise(function (resolve, reject) {
-        var examples = {};
-        examples['application/json;charset&#x3D;utf-8'] = {};
-        if (Object.keys(examples).length > 0) {
-            resolve(examples[Object.keys(examples)[0]]);
-        } else {
-            resolve();
-        }
+        //infura provider
+        const provider = new ethers.providers.InfuraProvider(process.env.NETWORK, process.env.INFURA_KEY);
+        const iface = new ethers.utils.Interface(TOKAbi);
+        //contract instance from abis/TOK.json
+        const contract = new Contract(process.env.TOK_CONTRACT_ADDRESS, TOKAbi, provider);
+        //get all events from contract
+        contract.queryFilter("*").then(async (events) => {
+            const orders = [];
+            events.sort((a, b) => a.blockNumber - b.blockNumber);
+            //iterate through orders
+            //if it's NewOrderEvent then add to orders array
+            //if it's TransactEvent modify order
+            for (const event of events) {
+                if (event.event === "NewOrderEvent") {
+                    const parsed = iface.parseLog(event);
+                    const orderId = parsed.args.orderId;
+                    const order = await contract.getOrders(orderId);
+                    orders.push(mapOrder(orderId, order));
+                } else if (event.event === "TransactEvent") {
+                    const parsed = iface.parseLog(event);
+                    const orderId = parsed.args.orderId;
+                    const order = orders.find((order) => order.order_id === orderId);
+                    //remove order from array
+                    orders.splice(orders.indexOf(order), 1);
+                }
+            }        
+            resolve(wrapResponse(orders));
+        })
     });
-}
+};
 
 
 /**
@@ -107,5 +130,20 @@ exports.getOffersPOST = function (xAuthToken, body) {
         resolve(wrapResponse(retDat));
 
     });
+}
+
+function mapOrder(orderId, order) {
+    return {
+        order_id: orderId,
+        additionalInformation: {
+            pricePerToken: order.price,
+            tokenAddress: order.tokenAddress,
+            currentState: order.currentState,
+            totalOrderAmount: order.amount,
+            ppraFee: order.ppraFee,
+            equityTokenOwner: order.equityTokenOwner,
+            equityTokenAmount: order.equityTokenAmount
+        }
+    };
 }
 
