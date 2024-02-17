@@ -1,8 +1,8 @@
 'use strict';
 
 
-const {wrapResponse} = require("../utils/writer");
-const {ppraTokens} = require("../mock/TokenMockData");
+const { wrapResponse } = require("../utils/writer");
+const { ppraTokens } = require("../mock/TokenMockData");
 const { Contract, ethers } = require("ethers");
 const { getAllOffersPOST } = require("./OffersService");
 const EquityTokenABI = require("../abis/EquityToken.json").abi;
@@ -23,13 +23,21 @@ exports.getMyTokensPOST = async function (xAuthToken) {
         return acc;
     }, {});
 
+    const tokenNameByAddress = new Map(offers.map(offer => [offer.additionalInformation.tokenAddress, offer.additionalInformation.equityTokenName]));
+
     return new Promise(async function (resolve, reject) {
         const provider = new ethers.providers.InfuraProvider(process.env.NETWORK, process.env.INFURA_KEY);
         for (const token of ppraTokens) {
             const contract = new Contract(token.address, EquityTokenABI, provider);
             const balance = await contract.balanceOf(xAuthToken);
+            //if balance is 0 then remove token from list
+            if (balance.eq(0)) {
+                ppraTokens.splice(ppraTokens.indexOf(token), 1);
+                continue;
+            }
             token.balance = balance;
             token.offerCount = offersCountByAddress[token.address] || 0;
+            token.name = tokenNameByAddress.get(token.address);
         }
 
         resolve(wrapResponse(ppraTokens));

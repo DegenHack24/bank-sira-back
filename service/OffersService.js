@@ -5,6 +5,8 @@ const { ethers, Contract } = require("ethers");
 const { produceErrorResponse, offers, producePageEnvelope } = require("../mock/OfferMockData");
 const { wrapResponse } = require("../utils/writer");
 const TOKAbi = require("../abis/TOK.json").abi;
+const EquityTokenABI = require("../abis/EquityToken.json").abi;
+
 /**
  * All offers from TOK
  *
@@ -22,6 +24,7 @@ exports.getAllOffersPOST = function (xAuthToken, body) {
         //get all events from contract
         contract.queryFilter("*").then(async (events) => {
             const orders = [];
+            const equityTokenNamesCache = {};
             events.sort((a, b) => a.blockNumber - b.blockNumber);
             //iterate through orders
             //if NewOrderEvent then add to orders array
@@ -33,7 +36,18 @@ exports.getAllOffersPOST = function (xAuthToken, body) {
                     const timestamp = (await event.getBlock()).timestamp;
                     const orderId = parsed.args.orderId;
                     const order = await contract.getOrders(orderId);
-                    orders.push(mapNewOrder(orderId, order, timestamp));
+                    let equityTokenName;
+
+                    //check if we have equity token name in cache
+                    if (equityTokenNamesCache[order.tokenAddress]) {
+                        equityTokenName = equityTokenNamesCache[order.tokenAddress];
+                    } else {
+                        const equityTokenContract = new Contract(order.tokenAddress, EquityTokenABI, provider);
+                        equityTokenName = await equityTokenContract.name();
+                        equityTokenNamesCache[order.tokenAddress] = equityTokenName;
+                    }
+                    
+                    orders.push(mapNewOrder(orderId, order, timestamp, equityTokenName));
                 } else if (event.event === "DepositEquityTokenEvent") {
                     const parsed = iface.parseLog(event);
                     const orderId = parsed.args.orderId;
@@ -138,13 +152,14 @@ exports.getOffersPOST = function (xAuthToken, body) {
     });
 }
 
-function mapNewOrder(orderId, order, timestamp) {
+function mapNewOrder(orderId, order, timestamp, equityTokenName) {
     return {
         order_id: orderId,
         status: "NEW",
         additionalInformation: {
             pricePerToken: order.price,
             tokenAddress: order.tokenAddress,
+            equityTokenName: equityTokenName,
             currentState: order.currentState,
             totalOrderAmount: order.amount,
             ppraFee: order.ppraFee,
