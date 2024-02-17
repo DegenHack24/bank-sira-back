@@ -24,8 +24,9 @@ exports.getAllOffersPOST = function (xAuthToken, body) {
             const orders = [];
             events.sort((a, b) => a.blockNumber - b.blockNumber);
             //iterate through orders
-            //if it's NewOrderEvent then add to orders array
-            //if it's TransactEvent modify order
+            //if NewOrderEvent then add to orders array
+            //if DepositEquityTokenEvent modify order status
+            //if TransactEvent modify order status
             for (const event of events) {
                 if (event.event === "NewOrderEvent") {
                     const parsed = iface.parseLog(event);
