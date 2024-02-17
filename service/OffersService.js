@@ -31,13 +31,17 @@ exports.getAllOffersPOST = function (xAuthToken, body) {
                     const parsed = iface.parseLog(event);
                     const orderId = parsed.args.orderId;
                     const order = await contract.getOrders(orderId);
-                    orders.push(mapOrder(orderId, order));
+                    orders.push(mapNewOrder(orderId, order));
+                } else if (event.event === "DepositEquityTokenEvent") {
+                    const parsed = iface.parseLog(event);
+                    const orderId = parsed.args.orderId;
+                    const order = orders.find((order) => order.order_id.eq(orderId));
+                    order.status = 'EQUITY_DEPOSITED';
                 } else if (event.event === "TransactEvent") {
                     const parsed = iface.parseLog(event);
                     const orderId = parsed.args.orderId;
-                    const order = orders.find((order) => order.order_id === orderId);
-                    //remove order from array
-                    orders.splice(orders.indexOf(order), 1);
+                    const order = orders.find((order) => order.order_id.eq(orderId));
+                    order.status = 'COMPLETED';
                 }
             }        
             resolve(wrapResponse(orders));
@@ -132,9 +136,10 @@ exports.getOffersPOST = function (xAuthToken, body) {
     });
 }
 
-function mapOrder(orderId, order) {
+function mapNewOrder(orderId, order) {
     return {
         order_id: orderId,
+        status: "NEW",
         additionalInformation: {
             pricePerToken: order.price,
             tokenAddress: order.tokenAddress,
