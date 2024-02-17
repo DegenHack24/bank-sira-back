@@ -21,7 +21,7 @@ exports.getMyTokensPOST = async function (xAuthToken) {
             acc[offer.additionalInformation.tokenAddress] = 1;
         }
         return acc;
-    });
+    }, {});
 
     return new Promise(async function (resolve, reject) {
         const provider = new ethers.providers.InfuraProvider(process.env.NETWORK, process.env.INFURA_KEY);
