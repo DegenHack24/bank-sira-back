@@ -30,9 +30,10 @@ exports.getAllOffersPOST = function (xAuthToken, body) {
             for (const event of events) {
                 if (event.event === "NewOrderEvent") {
                     const parsed = iface.parseLog(event);
+                    const timestamp = (await event.getBlock()).timestamp;
                     const orderId = parsed.args.orderId;
                     const order = await contract.getOrders(orderId);
-                    orders.push(mapNewOrder(orderId, order));
+                    orders.push(mapNewOrder(orderId, order, timestamp));
                 } else if (event.event === "DepositEquityTokenEvent") {
                     const parsed = iface.parseLog(event);
                     const orderId = parsed.args.orderId;
@@ -44,7 +45,7 @@ exports.getAllOffersPOST = function (xAuthToken, body) {
                     const order = orders.find((order) => order.order_id.eq(orderId));
                     order.status = 'COMPLETED';
                 }
-            }        
+            }
             resolve(wrapResponse(orders));
         })
     });
@@ -137,7 +138,7 @@ exports.getOffersPOST = function (xAuthToken, body) {
     });
 }
 
-function mapNewOrder(orderId, order) {
+function mapNewOrder(orderId, order, timestamp) {
     return {
         order_id: orderId,
         status: "NEW",
@@ -148,7 +149,8 @@ function mapNewOrder(orderId, order) {
             totalOrderAmount: order.amount,
             ppraFee: order.ppraFee,
             equityTokenOwner: order.equityTokenOwner,
-            equityTokenAmount: order.equityTokenAmount
+            equityTokenAmount: order.equityTokenAmount,
+            timestamp: timestamp
         }
     };
 }
