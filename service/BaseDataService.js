@@ -25,7 +25,7 @@ exports.getIssuersPOST = function (xAuthToken, body) {
  * returns MyAssetsEnvelope
  **/
 exports.getMyAssetsPOST = function (xAuthToken, body) {
-    return new Promise(function (resolve, reject) {
+    return new Promise(async function (resolve, reject) {
         var examples = {};
         examples['application/json;charset&#x3D;utf-8'] = {};
         if (Object.keys(examples).length > 0) {
