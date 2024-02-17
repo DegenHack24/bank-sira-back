@@ -1,15 +1,15 @@
 const ppraTokens = [
     {
         "id": "1",
-        "address": "0x64b23409D59f694b2b85cfc8C4A60f82250B3871",
+        "address": "0x229Fd58132E0be91A2dE414663FcD492baaC8f8a",
         "isin": "ISIN_1",
         "series": "SERIES_1"
     },
     {
         "id": "2",
-        "address": "0x1e3Bb533965C0c3F8Cc4af377852F60d84bAf78C",
+        "address": "0xbB3dbf9AEEb50f7055a95cf1bd71c9DbbeA54F6D",
         "isin": "ISIN_2",
-        "series": "SERIES_2s"
+        "series": "SERIES_2"
     }
 ]
 
