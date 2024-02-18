@@ -1,10 +1,11 @@
 'use strict';
 
 
-const { wrapResponse } = require("../utils/writer");
-const { ppraTokens } = require("../mock/TokenMockData");
-const { Contract, ethers } = require("ethers");
-const { getAllOffersPOST } = require("./OffersService");
+const {wrapResponse} = require("../utils/writer");
+const {ppraTokens} = require("../mock/TokenMockData");
+const {Contract, ethers} = require("ethers");
+const {getAllOffersPOST} = require("./OffersService");
+const {produceErrorResponse} = require("../mock/OfferMockData");
 const EquityTokenABI = require("../abis/EquityToken.json").abi;
 /**
  * All of my tokens
@@ -13,7 +14,13 @@ const EquityTokenABI = require("../abis/EquityToken.json").abi;
  * returns TokenEnvelope
  **/
 exports.getMyTokensPOST = async function (xAuthToken) {
-    const offers = (await getAllOffersPOST(xAuthToken, {})).body;
+    const userAddress = xAuthToken;
+    const offers = (await getAllOffersPOST(userAddress, {})).body;
+
+    if (!userAddress) {
+        return wrapResponse(produceErrorResponse('Invalid wallet address'));
+    }
+
     const offersCountByAddress = offers.reduce((acc, offer) => {
         if (acc[offer.additionalInformation.tokenAddress]) {
             acc[offer.additionalInformation.tokenAddress]++;
@@ -22,14 +29,14 @@ exports.getMyTokensPOST = async function (xAuthToken) {
         }
         return acc;
     }, {});
-
+    const provider = new ethers.providers.InfuraProvider(process.env.NETWORK, process.env.INFURA_KEY);
     const tokenNameByAddress = new Map(offers.map(offer => [offer.additionalInformation.tokenAddress, offer.additionalInformation.equityTokenName]));
 
     return new Promise(async function (resolve, reject) {
-        const provider = new ethers.providers.InfuraProvider(process.env.NETWORK, process.env.INFURA_KEY);
         for (const token of ppraTokens) {
+            console.log('token.address', token.address)
             const contract = new Contract(token.address, EquityTokenABI, provider);
-            const balance = await contract.balanceOf(xAuthToken);
+            const balance = await contract.balanceOf(userAddress);
             //if balance is 0 then remove token from list
             if (balance.eq(0)) {
                 ppraTokens.splice(ppraTokens.indexOf(token), 1);

@@ -7,7 +7,7 @@ module.exports.getMyTokensPOST = function getMyTokensPOST(req, res, next) {
     var xAuthToken = req.swagger.params['X-Auth-Token'].value;
     AddressesForTokens.getMyTokensPOST(xAuthToken)
         .then(function (response) {
-            utils.writeJson(res, response);
+            utils.writeJson(res, response?.body, response?.code);
         })
         .catch(function (response) {
             utils.writeJson(res, response);
